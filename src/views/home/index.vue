@@ -19,7 +19,7 @@ export default {
       msg:2
     })
     const doubleCount = computed(()=>obj.count*2)
-    const storeCount = computed(()=>store.getters['demo/doubleCount'])
+    const storeCount = computed(():number=>store.getters['demo/doubleCount'])
 
     onMounted(()=>{
       setInterval(()=>{

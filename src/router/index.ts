@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import beforeEachHandle from './beforeEachHandle'
 import AdminLayout from '../layouts/AdminLayout.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -27,5 +28,13 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 });
+
+/**
+ * 注册所有的路由拦截器
+ * */
+beforeEachHandle.forEach(callbackFn => {
+  router.beforeEach(callbackFn)
+})
+
 
 export default router;

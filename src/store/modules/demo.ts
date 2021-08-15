@@ -1,8 +1,6 @@
 import { Module, ActionTree, MutationTree, GetterTree } from 'vuex'
+import { IDemoState } from '../interface/demo'
 
-export interface IDemoState {
-    count: number
-}
 
 const state: IDemoState = {
     count: 0
