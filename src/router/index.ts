@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import beforeEachHandle from './beforeEachHandle'
-import AdminLayout from '../layouts/AdminLayout.vue'
+import AdminLayout from '@/layouts/AdminLayout.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -13,14 +13,14 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           code: 'page_home'
         },
-        component: () => import(/* webpackChunkName: "home", webpackPrefetch:true */ '../views/home/index.vue'),
+        component: () => import(/* webpackChunkName: "home", webpackPrefetch:true */ '@/views/home/index.vue'),
       }
     ]
   },
   {
     path: '/login',
     name: "Login",
-    component: () => import(/* webpackChunkName: "Login" */ '../views/login/index.vue'),
+    component: () => import(/* webpackChunkName: "Login" */ '@/views/login/index.vue'),
   },
 ];
 
