@@ -1,16 +1,17 @@
-import axios, { AxiosRequestConfig } from 'axios'
-import { useStore } from 'vuex'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import store from '../store/index'
 import moment from 'moment';
 import { compose } from '../utils/common'
 import { IToken } from '../store/interface/login'
-
+import { message } from 'ant-design-vue'
 
 const instance = axios.create({
-    baseURL: '/api/',
     timeout: 0,
-    headers: { 'X-Custom-Header': 'foobar' }
+    headers: {
+        'X-Custom-Header': 'foobar',
+        'error-ignore': true
+    }
 });
-const store = useStore()
 
 let refreshTimeout: any;
 let lastAccessTime = 0;
@@ -39,15 +40,10 @@ export enum methods {
  * 获取访问令牌
  * */
 function getToken(): IToken {
-    return store.state['login/token'] as IToken
+    return (store.state as any).login.token as IToken
 }
 
-/**
- * 设置令牌
- * */
-function setToken(token: IToken) {
 
-}
 
 /**
  * 退出登录
@@ -64,20 +60,58 @@ function loginOut() {
  * */
 function addTokenToHeader(c: AxiosRequestConfig): AxiosRequestConfig {
     const token = getToken()
+    const skipUrlList = [
+        '/api/v1/pub/login',
+        '/api/v1/pub/login/captcha',
+        '/api/v1/pub/login/captchaid',
+    ]
 
-    // 判断token过期直接退出
-    if (token && token.expiresAt - moment().unix() <= 0) {
-        loginOut()
-        throw new Error('The token has expired')
+    // 跳过token添加，以及鉴权
+    if (!skipUrlList.includes(c.url || '')) {
+        // 判断token过期直接退出
+        if (!store.getters('login/isLogin')) {
+            loginOut()
+            throw new Error('The token has expired')
+        }
+        // 合法则添加token
+        c.headers[headerKeys.Authorization] = `${token.tokenType} ${token.accessToken}`
     }
-    c.headers[headerKeys.Authorization] = `${token.tokenType} ${token.accessToken}`
+
+
     return c
+}
+
+/**
+ * 统一消息提示
+ * */
+function unifiedErrorPrompt(response: AxiosResponse) {
+    const { message: msg } = response?.data?.error
+
+    if (typeof msg === 'string') {
+        message.error(msg)
+    }
+}
+
+
+/**
+ * 设置令牌
+ * */
+function setToken(response: AxiosResponse) {
+    const urlList = [
+        '/api/v1/pub/login'
+    ]
+    if (urlList.includes(response.config.url || '')) {
+        // 存在则保存token
+        if (response.data && response.data.accessToken) {
+            store.commit('login/setToken', response.data)
+        }
+    }
 }
 
 /**
  * 请求拦截器
  * */
-axios.interceptors.request.use(
+instance.interceptors.request.use(
     function (config) {
         return compose(addTokenToHeader)(config)
     },
@@ -89,12 +123,17 @@ axios.interceptors.request.use(
 /**
  * 响应拦截器
  * */
-axios.interceptors.response.use(
+instance.interceptors.response.use(
     function (response) {
-        return response
+
+        setToken(response)
+
+        return response.data
     },
     function (error) {
-        console.log(error)
+
+        unifiedErrorPrompt(error.response)
+
         return Promise.reject(error)
     }
 )

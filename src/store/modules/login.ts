@@ -18,9 +18,6 @@ const mutations: MutationTree<ILoginState> = {
 }
 
 const actions: ActionTree<ILoginState, any> = {
-    login() {
-
-    },
     loginOut({ commit }) {
         // 清空token
         commit('setToken', {
@@ -44,7 +41,7 @@ const actions: ActionTree<ILoginState, any> = {
 
 const getters: GetterTree<ILoginState, any> = {
     isLogin(state) {
-        if (!state.token || state.token.expiresAt - Date.now() <= 0) {
+        if (!state.token || state.token.expiresAt * 1000 - Date.now() <= 0) {
             return false
         }
 

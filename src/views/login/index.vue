@@ -5,137 +5,197 @@
       <h1 class="login_title-text">RBAC 后台管理系统</h1>
     </div>
     <div class="login_container">
-      <n-form :model="model" ref="formRef" :rules="rules">
-        <n-form-item path="userName" label="用户名称">
-          <n-input
-            v-model:value="model.userName"
+      <a-form
+        ref="formRef"
+        layout="vertical"
+        :model="formState"
+        :rules="rules"
+        @finish="handleLogin"
+      >
+        <a-form-item name="userName" label="用户名称">
+          <a-input
+            v-model:value="formState.userName"
             size="large"
             placeholder="请输入用户名称"
-            @keydown.enter.prevent
           >
             <template #prefix>
-              <n-icon size="20" :depth="2" color="#0e7a0d">
-                <user-icon />
-              </n-icon>
+              <user-outlined />
             </template>
-          </n-input>
-        </n-form-item>
+          </a-input>
+        </a-form-item>
 
-        <n-form-item path="password" label="密码">
-          <n-input
-            v-model:value="model.password"
+        <a-form-item name="password" label="密码">
+          <a-input-password
+            v-model:value="formState.password"
             size="large"
             placeholder="请输入用户密码"
-            type="password"
-            @keydown.enter.prevent
           >
             <template #prefix>
-              <n-icon size="20" :depth="2" color="#0e7a0d">
-                <password-icon />
-              </n-icon>
+              <KeyOutlined />
             </template>
-          </n-input>
-        </n-form-item>
+          </a-input-password>
+        </a-form-item>
 
-        <n-form-item path="captchaCode" label="验证码">
-          <n-input
-            v-model:value="model.captchaCode"
+        <a-form-item name="captchaCode" label="验证码">
+          <a-input
+            class="login_captcha-input"
+            v-model:value="formState.captchaCode"
             size="large"
             placeholder=""
-            @keydown.enter.prevent
           />
 
-          <n-popover trigger="hover">
-            <template #trigger>
-              <img class="login_captcha" src="./image/login_bk.jpg" />
-            </template>
-            <span> 点击刷新图片 </span>
-          </n-popover>
-        </n-form-item>
+          <a-tooltip title="点击刷新图片" color="#108ee9">
+            <img class="login_captcha-img" :src="captchaUrl" @click="refreshCaptcha" />
+          </a-tooltip>
+        </a-form-item>
 
         <div class="login_submit">
-          <n-button
+          <a-button
             :loading="loading"
             class="login_submit-btn"
             type="primary"
+            html-type="submit"
             size="large"
-            @click="loading = !loading"
           >
-            <template #icon>
-              <n-icon>
-                <login-icon />
-              </n-icon>
-            </template>
+            <template #icon><ExportOutlined /></template>
             登录
-          </n-button>
+          </a-button>
         </div>
-      </n-form>
+      </a-form>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { User, Password, Login } from "@vicons/carbon";
+import { defineComponent, ref, onMounted, reactive } from "vue";
+import { UserOutlined, KeyOutlined, ExportOutlined } from "@ant-design/icons-vue";
+import { getCaptchaid, getCaptcha, login, ILoginParams } from "../../server/login";
+import { md5Hash } from "../../utils/security";
+import { useRouter, useRoute } from "vue-router";
 
 export default defineComponent({
   components: {
-    UserIcon: User,
-    PasswordIcon: Password,
-    LoginIcon: Login,
+    UserOutlined,
+    KeyOutlined,
+    ExportOutlined,
   },
   setup() {
-    const formRef = ref(null);
+    const router = useRouter();
+    const route = useRoute();
+
+    const formRef = ref();
     const loading = ref(false);
-    const modelRef = ref({
-      userName: null,
-      password: null,
-      captchaId: null,
-      captchaCode: null,
+    const formState = reactive({
+      userName: "",
+      password: "",
+      captchaId: "",
+      captchaCode: "",
     });
+
+    const captcha = useCaptcha(formState);
+
+    //  登录函数
+    async function handleLogin() {
+      loading.value = true;
+
+      try {
+        await login({
+          userName: formState.userName.trim(),
+          password: md5Hash(formState.password.trim()),
+          captchaId: formState.captchaId,
+          captchaCode: formState.captchaCode,
+        });
+
+        if (typeof route.query.redirect === "string") {
+          window.location.href = decodeURIComponent(route.query.redirect);
+        } else {
+          router.push({
+            name: "Home",
+          });
+        }
+      } catch (error) {
+        captcha.refreshCaptcha();
+      }
+
+      loading.value = false;
+    }
+
     return {
       formRef,
-      model: modelRef,
-      rules: {
-        userName: {
-          required: true,
-          validator(rule: any, value: string) {
-            if (!value) {
-              return new Error("请输入用户名");
-            }
-            return true;
-          },
-          trigger: ["input", "blur"],
-        },
-        password: {
-          required: true,
-          validator(rule: any, value: string) {
-            if (!value) {
-              return new Error("请输入密码");
-            } else if (!/^([a-zA-Z0-9_\u4e00-\u9fa5]{4,16})$/.test(value)) {
-              return new Error("请输入由 [字母,数字,下划线] 组成的密码");
-            }
-            return true;
-          },
-          trigger: ["input", "blur"],
-        },
-        captchaCode: {
-          required: true,
-          validator(rule: any, value: string) {
-            if (!value) {
-              return new Error("请输入验证码");
-            } else if (!/^([a-zA-Z0-9_\u4e00-\u9fa5]{4,16})$/.test(value)) {
-              return new Error("验证码不合法");
-            }
-            return true;
-          },
-          trigger: ["input", "blur"],
-        },
-      },
+      formState,
+      ...captcha,
+      rules: useValidator(),
       loading,
+      handleLogin,
     };
   },
 });
+
+/**
+ * 验证码处理函数
+ * */
+function useCaptcha(formState: ILoginParams) {
+  let captchaUrl = ref("");
+
+  // 刷新二维码
+  async function refreshCaptcha() {
+    // 获取图片id
+    formState.captchaId = await getCaptchaid();
+    // 获取图片
+    captchaUrl.value = getCaptcha(formState.captchaId);
+  }
+
+  onMounted(() => {
+    refreshCaptcha();
+  });
+
+  return {
+    captchaUrl,
+    refreshCaptcha,
+  };
+}
+
+/**
+ * 校验器规则
+ * */
+function useValidator() {
+  return {
+    userName: {
+      required: true,
+      validator: (rule: any, value: string) => {
+        if (!value) {
+          return Promise.reject("请输入用户名");
+        }
+        return Promise.resolve();
+      },
+      trigger: "blur",
+    },
+    password: {
+      required: true,
+      validator(rule: any, value: string) {
+        if (!value) {
+          return Promise.reject("请输入密码");
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,16}$/.test(value)) {
+          return Promise.reject("需要8-16个包含大小写字母和数字的字符");
+        }
+        return Promise.resolve();
+      },
+      trigger: "blur",
+    },
+    captchaCode: {
+      required: true,
+      validator(rule: any, value: string) {
+        if (!value) {
+          return Promise.reject("请输入验证码");
+        } else if (!/^\d{4}$/.test(value)) {
+          return Promise.reject("验证码不合法");
+        }
+        return Promise.resolve();
+      },
+      trigger: "blur",
+    },
+  };
+}
 </script>
 
 <style lang="scss">
@@ -185,10 +245,20 @@ export default defineComponent({
   }
 
   &_captcha {
-    display: inline-block;
-    height: 40px;
-    margin-left: 10px;
-    cursor: pointer;
+    display: flex;
+    width: 100%;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    &-input {
+      display: inline-block;
+      width: 160px;
+    }
+    &-img {
+      display: inline-block;
+      height: 40px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
   }
 
   &_submit {
@@ -198,14 +268,5 @@ export default defineComponent({
       width: 100%;
     }
   }
-}
-
-.light-green {
-  height: 108px;
-  background-color: rgba(0, 128, 0, 0.12);
-}
-.green {
-  height: 108px;
-  background-color: rgba(0, 128, 0, 0.24);
 }
 </style>
