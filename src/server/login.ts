@@ -32,11 +32,25 @@ export interface ILoginParams {
     password: string,
     userName: string
 }
-export interface ILoginResult {
+export interface IToken {
     accessToken: string,
     expiresAt: number,
     tokenType: string
 }
-export async function login(params: ILoginParams): Promise<ILoginResult> {
-    return await axios.post('/api/v1/pub/login', params) as ILoginResult
+export async function login(params: ILoginParams): Promise<IToken> {
+    return await axios.post('/api/v1/pub/login', params) as IToken
+}
+
+/**
+ * 刷新令牌
+ * */
+export function refreshToken(): Promise<IToken> {
+    return axios.post('/api​/v1​/pub​/refresh-token')
+}
+
+/**
+ * 用户登出
+ * */
+export function loginOut() {
+    return axios.post('/api/v1/pub/login/exit')
 }

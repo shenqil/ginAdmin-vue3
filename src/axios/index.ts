@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import store from '../store/index'
-import moment from 'moment';
 import { compose } from '../utils/common'
 import { IToken } from '../store/interface/login'
 import { message } from 'ant-design-vue'
@@ -12,9 +11,6 @@ const instance = axios.create({
         'error-ignore': true
     }
 });
-
-let refreshTimeout: any;
-let lastAccessTime = 0;
 
 export enum contentType {
     from = 'application/x-www-form-urlencoded',
@@ -49,9 +45,6 @@ function getToken(): IToken {
  * 退出登录
  * */
 function loginOut() {
-    if (refreshTimeout) {
-        clearTimeout(refreshTimeout);
-    }
     store.dispatch('login/loginOut')
 }
 
@@ -98,7 +91,8 @@ function unifiedErrorPrompt(response: AxiosResponse) {
  * */
 function setToken(response: AxiosResponse) {
     const urlList = [
-        '/api/v1/pub/login'
+        '/api/v1/pub/login',
+        '/api​/v1​/pub​/refresh-token'
     ]
     if (urlList.includes(response.config.url || '')) {
         // 存在则保存token

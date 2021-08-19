@@ -2,6 +2,38 @@ import { Module, ActionTree, MutationTree, GetterTree } from 'vuex'
 import { getCacheToken, saveTokenToCache } from '../cache/accessToken'
 import { ILoginState, IToken } from '../interface/login'
 import router from '../../router'
+import { refreshToken, loginOut } from '../../server/login'
+
+class TokenManage {
+
+    refreshTimeout: any;
+    advanceTime = 10 * 1000 // 提前10秒刷新token
+
+    /**
+     * 更新token刷新任务
+     * */
+    updateRefreshTask(expiresAt: number) {
+
+        const lastAccessTime = expiresAt * 1000 - this.advanceTime - Date.now()
+        if (lastAccessTime <= 0) {
+            return
+        }
+
+        if (this.refreshTimeout) {
+            clearTimeout(this.refreshTimeout)
+        }
+
+        this.refreshTimeout = setTimeout(() => {
+            this.refreshTask()
+        }, lastAccessTime)
+    }
+
+    refreshTask() {
+        refreshToken()
+    }
+}
+
+const tokenManage = new TokenManage()
 
 const state: ILoginState = {
     token: getCacheToken()
@@ -14,11 +46,13 @@ const mutations: MutationTree<ILoginState> = {
             ...token
         }
         saveTokenToCache(state.token)
+        tokenManage.updateRefreshTask(token.expiresAt)
     }
 }
 
 const actions: ActionTree<ILoginState, any> = {
     loginOut({ commit }) {
+        loginOut()
         // 清空token
         commit('setToken', {
             accessToken: '',
