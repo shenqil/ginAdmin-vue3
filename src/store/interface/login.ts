@@ -1,3 +1,5 @@
+import { IMenuTree } from '../../server/login'
+
 export interface IToken {
     accessToken: string
     tokenType: string
@@ -6,4 +8,5 @@ export interface IToken {
 
 export interface ILoginState {
     token: IToken
+    menuTree: Array<IMenuTree>
 }

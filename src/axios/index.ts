@@ -8,7 +8,7 @@ const instance = axios.create({
     timeout: 0,
     headers: {
         'X-Custom-Header': 'foobar',
-        'error-ignore': true
+        'ignore-error': false
     }
 });
 
@@ -62,7 +62,7 @@ function addTokenToHeader(c: AxiosRequestConfig): AxiosRequestConfig {
     // 跳过token添加，以及鉴权
     if (!skipUrlList.includes(c.url || '')) {
         // 判断token过期直接退出
-        if (!store.getters('login/isLogin')) {
+        if (!store.getters['login/isLogin']) {
             loginOut()
             throw new Error('The token has expired')
         }
@@ -78,7 +78,7 @@ function addTokenToHeader(c: AxiosRequestConfig): AxiosRequestConfig {
  * 统一消息提示
  * */
 function unifiedErrorPrompt(response: AxiosResponse) {
-    const { message: msg } = response?.data?.error
+    const { message: msg } = response?.data?.error || {}
 
     if (typeof msg === 'string') {
         message.error(msg)
@@ -125,7 +125,6 @@ instance.interceptors.response.use(
         return response.data
     },
     function (error) {
-
         unifiedErrorPrompt(error.response)
 
         return Promise.reject(error)

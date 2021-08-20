@@ -7,11 +7,27 @@ import store from '../store/index'
 function checkIsLogin(to: RouteLocationNormalized, from: RouteLocationNormalized) {
     const isLogin = store.getters['login/isLogin']
     if (!isLogin && to.path !== '/login') {
-        store.dispatch('login/loginOut')
-        return false
+        return {
+            path: '/login',
+            query: {
+                redirect: encodeURIComponent(window.location.href),
+            },
+            replace: true
+        }
+    }
+}
+
+/**
+ * 数据初始化
+ * */
+function dataInit(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+    const isLogin = store.getters['login/isLogin']
+    if (isLogin) {
+        store.dispatch('login/fetchMenuTree')
     }
 }
 
 export default [
-    checkIsLogin
+    checkIsLogin,
+    dataInit
 ]

@@ -2,8 +2,12 @@ import { Module, ActionTree, MutationTree, GetterTree } from 'vuex'
 import { getCacheToken, saveTokenToCache } from '../cache/accessToken'
 import { ILoginState, IToken } from '../interface/login'
 import router from '../../router'
-import { refreshToken, loginOut } from '../../server/login'
+import { refreshToken, loginOut, IMenuTree, getMenuTree } from '../../server/login'
 
+
+/**
+ * token自动管理
+ * */
 class TokenManage {
 
     refreshTimeout: any;
@@ -36,7 +40,8 @@ class TokenManage {
 const tokenManage = new TokenManage()
 
 const state: ILoginState = {
-    token: getCacheToken()
+    token: getCacheToken(),
+    menuTree: []
 }
 
 const mutations: MutationTree<ILoginState> = {
@@ -47,6 +52,9 @@ const mutations: MutationTree<ILoginState> = {
         }
         saveTokenToCache(state.token)
         tokenManage.updateRefreshTask(token.expiresAt)
+    },
+    setMenuTree(state, menuTree: Array<IMenuTree>) {
+        state.menuTree = menuTree
     }
 }
 
@@ -70,16 +78,23 @@ const actions: ActionTree<ILoginState, any> = {
             });
         }
     },
-
+    async fetchMenuTree({ commit }) {
+        const { list: menuTree } = await getMenuTree()
+        commit('setMenuTree', menuTree)
+        console.log(menuTree, 'menuTree')
+    }
 }
 
 const getters: GetterTree<ILoginState, any> = {
     isLogin(state) {
-        if (!state.token || state.token.expiresAt * 1000 - Date.now() <= 0) {
+        if (!state.token || typeof state.token.expiresAt !== 'number' || state.token.expiresAt * 1000 - Date.now() <= 0) {
             return false
         }
 
         return true
+    },
+    menuTree(state) {
+        return state.menuTree
     }
 }
 
