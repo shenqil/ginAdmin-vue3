@@ -5,10 +5,11 @@ import store from '../store/index'
  * 检测是否登录
  * */
 function checkIsLogin(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+    const urlList = ['/login', '404']
     const isLogin = store.getters['login/isLogin']
-    if (!isLogin && to.path !== '/login') {
+    if (!isLogin && !urlList.includes(to.path)) {
         return {
-            path: '/login',
+            name: 'Login',
             query: {
                 redirect: encodeURIComponent(window.location.href),
             },
@@ -17,17 +18,7 @@ function checkIsLogin(to: RouteLocationNormalized, from: RouteLocationNormalized
     }
 }
 
-/**
- * 数据初始化
- * */
-function dataInit(to: RouteLocationNormalized, from: RouteLocationNormalized) {
-    const isLogin = store.getters['login/isLogin']
-    if (isLogin) {
-        store.dispatch('login/fetchMenuTree')
-    }
-}
 
 export default [
-    checkIsLogin,
-    dataInit
+    checkIsLogin
 ]

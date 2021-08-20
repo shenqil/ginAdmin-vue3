@@ -27,8 +27,10 @@ class TokenManage {
             clearTimeout(this.refreshTimeout)
         }
 
+        console.log(lastAccessTime, '时间后刷新token')
         this.refreshTimeout = setTimeout(() => {
             this.refreshTask()
+            console.log("token已刷新")
         }, lastAccessTime)
     }
 
@@ -68,6 +70,9 @@ const actions: ActionTree<ILoginState, any> = {
             expiresAt: 0
         })
 
+        // 清空menuTree
+        commit('setMenuTree', [])
+
         // 重定向到登录页 
         if (window.location.pathname !== '/login') {
             router.replace({
@@ -81,7 +86,7 @@ const actions: ActionTree<ILoginState, any> = {
     async fetchMenuTree({ commit }) {
         const { list: menuTree } = await getMenuTree()
         commit('setMenuTree', menuTree)
-        console.log(menuTree, 'menuTree')
+        return menuTree
     }
 }
 
@@ -95,6 +100,19 @@ const getters: GetterTree<ILoginState, any> = {
     },
     menuTree(state) {
         return state.menuTree
+    },
+    menuMap(state) {
+        const menuMap: any = {}
+        function flattening(trees: Array<IMenuTree>) {
+            for (const tree of trees) {
+                menuMap[tree.router] = tree
+                if (Array.isArray(tree.children)) {
+                    flattening(tree.children)
+                }
+            }
+        }
+        flattening(state.menuTree || {})
+        return menuMap
     }
 }
 

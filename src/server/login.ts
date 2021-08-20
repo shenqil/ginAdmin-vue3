@@ -83,7 +83,7 @@ export interface IMenuTree {
     showStatus: number
     status: number
     actions?: IMenuAction
-    children?: IMenuResource
+    children?: Array<IMenuTree>
 }
 export async function getMenuTree(): Promise<IPageData<Array<IMenuTree>>> {
     return await axios.get('/api/v1/pub/current/menutree') as IPageData<Array<IMenuTree>>
