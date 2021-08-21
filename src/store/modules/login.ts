@@ -105,7 +105,8 @@ const getters: GetterTree<ILoginState, any> = {
         const menuMap: any = {}
         function flattening(trees: Array<IMenuTree>) {
             for (const tree of trees) {
-                menuMap[tree.router] = tree
+                tree.router && (menuMap[tree.router] = tree)
+                tree.id && (menuMap[tree.id] = tree)
                 if (Array.isArray(tree.children)) {
                     flattening(tree.children)
                 }
