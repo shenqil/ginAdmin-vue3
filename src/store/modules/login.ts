@@ -1,8 +1,9 @@
 import { Module, ActionTree, MutationTree, GetterTree } from 'vuex'
 import { getCacheToken, saveTokenToCache } from '../cache/accessToken'
-import { ILoginState, IToken } from '../interface/login'
 import router from '../../router'
-import { refreshToken, loginOut, IMenuTree, getMenuTree } from '../../server/login'
+import { refreshToken, loginOut, getMenuTree, getUserInfo } from '../../server/login'
+import { IToken, ILoginUserInfo } from '../../server/interface'
+import { IMenuTree } from '../../server/interface/index'
 
 
 /**
@@ -41,9 +42,16 @@ class TokenManage {
 
 const tokenManage = new TokenManage()
 
+export interface ILoginState {
+    token: IToken
+    menuTree: Array<IMenuTree>
+    userInfo: ILoginUserInfo // 登录人信息
+}
+
 const state: ILoginState = {
     token: getCacheToken(),
-    menuTree: []
+    menuTree: [],
+    userInfo: {} as ILoginUserInfo
 }
 
 const mutations: MutationTree<ILoginState> = {
@@ -57,21 +65,23 @@ const mutations: MutationTree<ILoginState> = {
     },
     setMenuTree(state, menuTree: Array<IMenuTree>) {
         state.menuTree = menuTree
+    },
+    setUserInfo(state, userInfo: ILoginUserInfo) {
+        state.userInfo = userInfo
     }
 }
 
 const actions: ActionTree<ILoginState, any> = {
-    loginOut({ commit }) {
+    signOut({ commit }) {
         loginOut()
-        // 清空token
+        // 清空已知数据
         commit('setToken', {
             accessToken: '',
             tokenType: '',
             expiresAt: 0
         })
-
-        // 清空menuTree
         commit('setMenuTree', [])
+        commit('setUserInfo', {})
 
         // 重定向到登录页 
         if (window.location.pathname !== '/login') {
@@ -87,6 +97,11 @@ const actions: ActionTree<ILoginState, any> = {
         const { list: menuTree } = await getMenuTree()
         commit('setMenuTree', menuTree)
         return menuTree
+    },
+    async fetchLoginUserInfo({ commit }) {
+        const userInfo = await getUserInfo()
+        commit('setUserInfo', userInfo)
+        return userInfo
     }
 }
 
@@ -101,8 +116,8 @@ const getters: GetterTree<ILoginState, any> = {
     menuTree(state) {
         return state.menuTree
     },
-    menuMap(state) {
-        const menuMap: any = {}
+    menuMap(state): { [index: string]: IMenuTree } {
+        const menuMap: { [index: string]: IMenuTree } = {}
         function flattening(trees: Array<IMenuTree>) {
             for (const tree of trees) {
                 tree.router && (menuMap[tree.router] = tree)
@@ -114,6 +129,9 @@ const getters: GetterTree<ILoginState, any> = {
         }
         flattening(state.menuTree || {})
         return menuMap
+    },
+    userInfo(state) {
+        return state.userInfo
     }
 }
 

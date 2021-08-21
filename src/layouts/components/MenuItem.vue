@@ -9,7 +9,7 @@
   </div>
 
   <div v-else>
-    <a-menu-item :key="item.router">
+    <a-menu-item :key="item.id">
       <template #icon> </template>
       <span>{{ item.name }}</span>
     </a-menu-item>
@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { IMenuTree } from "../../server/login";
+import { IMenuTree } from "../../server/interface";
 
 export default defineComponent({
   name: "MenuItem",

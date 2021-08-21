@@ -1,5 +1,6 @@
 import axios from '../axios/index'
-import { IPageData } from './interface'
+import { IPageData } from './interface/base'
+import { ILoginParams, IToken, IMenuTree, ILoginUserInfo } from './interface/index'
 
 /**
  * 获取验证码信息
@@ -26,17 +27,6 @@ export function getCaptcha(id: string): string {
 /**
  * 用户登录
  * */
-export interface ILoginParams {
-    captchaCode: string,
-    captchaId: string,
-    password: string,
-    userName: string
-}
-export interface IToken {
-    accessToken: string,
-    expiresAt: number,
-    tokenType: string
-}
 export async function login(params: ILoginParams): Promise<IToken> {
     return await axios.post('/api/v1/pub/login', params) as IToken
 }
@@ -58,33 +48,13 @@ export function loginOut() {
 /**
  * 查询当前用户菜单树
  * */
-export interface IMenuResource {
-    actionId: string,
-    id: string
-    method: string
-    path: string
-}
-
-export interface IMenuAction {
-    code: string,
-    id: string,
-    menuId: string,
-    name: string
-    resources?: Array<IMenuResource>
-}
-export interface IMenuTree {
-    id: string
-    icon: string
-    name: string
-    parentId: string
-    parentPath: string
-    router: string
-    sequence: number
-    showStatus: number
-    status: number
-    actions?: IMenuAction
-    children?: Array<IMenuTree>
-}
 export async function getMenuTree(): Promise<IPageData<Array<IMenuTree>>> {
     return await axios.get('/api/v1/pub/current/menutree') as IPageData<Array<IMenuTree>>
+}
+
+/**
+ * 获取用户信息
+ * */
+export async function getUserInfo(): Promise<ILoginUserInfo> {
+    return await axios.get('/api/v1/pub/current/user') as ILoginUserInfo
 }

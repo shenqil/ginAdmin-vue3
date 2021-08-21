@@ -46,11 +46,11 @@
 </template>
 
 <script lang="ts">
-import { reactive, toRefs, computed, watch, ComputedRef } from "vue";
-import { RouteLocationNormalized, useRouter } from "vue-router";
+import { reactive, toRefs, computed, watch, ComputedRef, onMounted } from "vue";
+import { RouteLocationNormalized, useRouter, useRoute } from "vue-router";
 import MenuItem from "./components/MenuItem.vue";
 import ToUser from "./components/ToUser.vue";
-import { IMenuTree } from "../server/login";
+import { IMenuTree } from "../server/interface/index";
 import store from "../store/index";
 
 export default {
@@ -79,10 +79,13 @@ export default {
   },
   setup() {
     const router = useRouter();
+    const route = useRoute();
+    const menuMap = store.getters["login/menuMap"] as { [index: string]: IMenuTree };
+    const selectedId = menuMap[route.path].id;
     const state = reactive({
       collapsed: false,
-      selectedKeys: ["/dashboard"],
-      openKeys: ["/"],
+      selectedKeys: [selectedId],
+      openKeys: [selectedId],
       preOpenKeys: [],
     });
 
@@ -90,11 +93,16 @@ export default {
     const selectedKey = computed(() => state.selectedKeys[0]);
     const breadcrumbs = useBreadcrumb(selectedKey);
 
+    onMounted(() => {
+      state.openKeys = initOpenKeys(selectedKey.value);
+      console.log(state.openKeys);
+    });
+
     watch(
       () => selectedKey.value,
-      (path) => {
+      (id) => {
         router.push({
-          path,
+          path: menuMap[id].router,
         });
       }
     );
@@ -111,7 +119,9 @@ export default {
  * 计算面包屑
  * */
 function useBreadcrumb(selectedKey: ComputedRef<string>) {
-  const menuMap = computed(() => store.getters["login/menuMap"]);
+  const menuMap = computed(
+    () => store.getters["login/menuMap"] as { [index: string]: IMenuTree }
+  );
 
   const breadcrumbs = computed(() => {
     return getBreadcrumb(selectedKey.value);
@@ -129,6 +139,26 @@ function useBreadcrumb(selectedKey: ComputedRef<string>) {
   }
 
   return breadcrumbs;
+}
+
+/**
+ * 初始化打开菜单
+ * */
+function initOpenKeys(selectedKey: string) {
+  const menuMap = store.getters["login/menuMap"] as { [index: string]: IMenuTree };
+
+  function getOpenKeys(selectedKey: string): Array<string> {
+    let result: Array<string> = [];
+    if (typeof selectedKey === "string") {
+      const menu = menuMap[selectedKey];
+      if (menu) {
+        result = [...getOpenKeys(menu.parentId), menu.id];
+      }
+    }
+    return result;
+  }
+
+  return getOpenKeys(selectedKey);
 }
 </script>
 
@@ -152,7 +182,7 @@ function useBreadcrumb(selectedKey: ComputedRef<string>) {
   }
 
   &__header {
-    padding: 0 20px;
+    padding: 0 60px;
     width: 100%;
     height: 100%;
     background-color: #fff;

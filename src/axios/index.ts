@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import store from '../store/index'
 import { compose } from '../utils/common'
-import { IToken } from '../store/interface/login'
+import { IToken } from '../server/interface'
 import { message } from 'ant-design-vue'
 
 const instance = axios.create({
@@ -45,7 +45,7 @@ function getToken(): IToken {
  * 退出登录
  * */
 function loginOut() {
-    store.dispatch('login/loginOut')
+    store.dispatch('login/signOut')
 }
 
 /**
@@ -57,6 +57,7 @@ function addTokenToHeader(c: AxiosRequestConfig): AxiosRequestConfig {
         '/api/v1/pub/login',
         '/api/v1/pub/login/captcha',
         '/api/v1/pub/login/captchaid',
+        '/api/v1/pub/login/exit'
     ]
 
     // 跳过token添加，以及鉴权

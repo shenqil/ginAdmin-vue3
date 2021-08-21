@@ -18,7 +18,21 @@ function checkIsLogin(to: RouteLocationNormalized, from: RouteLocationNormalized
     }
 }
 
+/**
+ * 获取当前登录用户信息
+ * */
+async function getCurrentLoginUserInfo(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+    const isLogin = store.getters['login/isLogin']
+    const userInfo = store.getters['login/userInfo']
+
+    // 已登录但是用户信息不存在就获取用户信息
+    if (isLogin && !userInfo.userName) {
+        await store.dispatch('login/fetchLoginUserInfo')
+    }
+}
+
 
 export default [
-    checkIsLogin
+    checkIsLogin,
+    getCurrentLoginUserInfo
 ]
