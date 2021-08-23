@@ -95,7 +95,6 @@ export default {
 
     onMounted(() => {
       state.openKeys = initOpenKeys(selectedKey.value);
-      console.log(state.openKeys);
     });
 
     watch(

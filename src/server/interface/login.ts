@@ -28,3 +28,18 @@ export interface ILoginUserInfo {
     userId: string,
     userName: string
 }
+
+/**
+ * 更新个人密码请求参数
+ * */
+export interface IUpdatePassParams {
+    newPassword: string,
+    oldPassword: string
+}
+
+/**
+ * 更新密码结果
+ * */
+export interface IUpdatePassResult {
+    status: string
+}

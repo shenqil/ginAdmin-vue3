@@ -31,7 +31,7 @@
             placeholder="请输入用户密码"
           >
             <template #prefix>
-              <KeyOutlined />
+              <LockOutlined />
             </template>
           </a-input-password>
         </a-form-item>
@@ -68,15 +68,16 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, reactive } from "vue";
-import { UserOutlined, KeyOutlined, ExportOutlined } from "@ant-design/icons-vue";
-import { getCaptchaid, getCaptcha, login, ILoginParams } from "../../server/login";
+import { UserOutlined, LockOutlined, ExportOutlined } from "@ant-design/icons-vue";
+import { getCaptchaid, getCaptcha, login } from "../../server/login";
+import { ILoginParams } from "../../server/interface";
 import { md5Hash } from "../../utils/security";
 import { useRouter, useRoute } from "vue-router";
 
 export default defineComponent({
   components: {
     UserOutlined,
-    KeyOutlined,
+    LockOutlined,
     ExportOutlined,
   },
   setup() {

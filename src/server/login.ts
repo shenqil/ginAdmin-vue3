@@ -1,6 +1,6 @@
 import axios from '../axios/index'
 import { IPageData } from './interface/base'
-import { ILoginParams, IToken, IMenuTree, ILoginUserInfo } from './interface/index'
+import { ILoginParams, IToken, IMenuTree, ILoginUserInfo, IUpdatePassParams, IUpdatePassResult } from './interface/index'
 
 /**
  * 获取验证码信息
@@ -57,4 +57,11 @@ export async function getMenuTree(): Promise<IPageData<Array<IMenuTree>>> {
  * */
 export async function getUserInfo(): Promise<ILoginUserInfo> {
     return await axios.get('/api/v1/pub/current/user') as ILoginUserInfo
+}
+
+/**
+ * 更新密码
+ * */
+export async function updatePassword(params: IUpdatePassParams): Promise<IUpdatePassResult> {
+    return await axios.put('/api/v1/pub/current/password', params) as IUpdatePassResult
 }
