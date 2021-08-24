@@ -1,6 +1,13 @@
 import axios from '../axios/index'
-import { IPageData } from './interface/base'
-import { ILoginParams, IToken, IMenuTree, ILoginUserInfo, IUpdatePassParams, IUpdatePassResult } from './interface/index'
+import {
+    IPageData,
+    ILoginParams,
+    IToken,
+    IMenuTree,
+    ILoginUserInfo,
+    IUpdatePassParams,
+    IUpdatePassResult
+} from './interface/index'
 
 /**
  * 获取验证码信息

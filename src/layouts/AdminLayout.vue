@@ -33,7 +33,7 @@
           </a-breadcrumb-item>
         </a-breadcrumb>
 
-        <div>
+        <div class="admin-layout__container">
           <router-view />
         </div>
       </a-layout-content>
@@ -188,6 +188,10 @@ function initOpenKeys(selectedKey: string) {
     display: flex;
     flex-flow: row;
     justify-content: flex-end;
+  }
+
+  &__container {
+    height: calc(100% - 60px);
   }
 }
 </style>
