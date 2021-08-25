@@ -1,5 +1,5 @@
 
-import { IToken } from '../interface/login'
+import { IToken } from '../../server/interface'
 const KEY = 'accessToken'
 
 /**

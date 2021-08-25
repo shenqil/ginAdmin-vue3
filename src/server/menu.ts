@@ -2,7 +2,7 @@ import axios from '../axios/index'
 import { IPageData, IMenuTree, IQueryMenuParams, IMenuItem, EStatus } from './interface/index'
 
 
-const MenuURL = '/api/v1/menus'
+const MenuURL = '/api/v1/management/menus'
 /**
  * 查询菜单树
  * */
