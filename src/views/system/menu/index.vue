@@ -18,7 +18,7 @@
     <div class="menu__container">
       <div class="menu__fliter">
         <div class="menu__fliter-left">
-          <a-button type="primary">
+          <a-button type="primary" @click="handleAdd">
             <template #icon><PlusOutlined /></template>
             新增
           </a-button>
@@ -65,7 +65,7 @@
                 title="确认要删除该菜单?"
                 ok-text="确认"
                 cancel-text="取消"
-                @confirm="handleRemove"
+                @confirm="handleRemove(record)"
               >
                 <a href="#">删除</a>
               </a-popconfirm>
@@ -97,25 +97,31 @@
         </a-table>
       </div>
     </div>
+
+    <MenuModal ref="MenuModal" @on-submit="onMenuModalSubmit" />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref, watch, h, reactive } from "vue";
+import { computed, defineComponent, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
-import menuSrv from "../../../server/menu";
-import { IMenuItem, IPageParams, IQueryMenuParams } from "../../../server/interface";
-import store from "../../../store";
+import menuSrv from "@/server/menu";
+import { IMenuItem, IPageParams, IQueryMenuParams } from "@/server/interface";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
+import MenuModal from "./components/MenuModal.vue";
 
 export default defineComponent({
   components: {
     SearchOutlined,
     PlusOutlined,
+    MenuModal,
   },
   setup() {
     const store = useStore();
     const loading = ref(false);
+
+    // 对vue虚拟Dom的引用
+    const MenuModal = ref<any>(null);
 
     /*-----------------------------表单数据---------------------------*/
     const statusModel = ref([]);
@@ -127,6 +133,9 @@ export default defineComponent({
     });
     const tabelData = ref<Array<IMenuItem>>([]);
 
+    /**
+     * 参数依赖发生变化，自动更新参数
+     * */
     const queryParams = computed<IQueryMenuParams>(() => {
       const status = statusModel.value.length === 1 ? statusModel.value[0] : undefined;
       const showStatus =
@@ -143,6 +152,27 @@ export default defineComponent({
       return params;
     });
 
+    /**
+     * 选中的父级发生变化，自动刷新列表
+     * */
+    watch(
+      () => store.getters["menu/selectedKeys"],
+      () => {
+        queryTableData();
+      }
+    );
+
+    /**
+     * 刷新所有菜单
+     * */
+    async function refreshAllMenu() {
+      await store.dispatch("menu/refreshMenuTree");
+      await store.dispatch("login/fetchMenuTree");
+    }
+
+    /**
+     * 查询列表数据
+     * */
     async function queryTableData() {
       const res = await menuSrv.getList(queryParams.value);
       tabelData.value = res.list;
@@ -158,12 +188,20 @@ export default defineComponent({
       queryTableData();
     }
 
+    function handleAdd() {
+      MenuModal.value.show();
+    }
+
+    function handleEdit(item: IMenuItem) {
+      MenuModal.value.show(item);
+    }
+
     async function handleRemove(item: IMenuItem) {
       loading.value = true;
       try {
         await menuSrv.remove(item.id);
         await queryTableData();
-        await store.dispatch("menu/refreshMenuTree");
+        await refreshAllMenu();
       } catch (error) {}
 
       loading.value = false;
@@ -174,7 +212,7 @@ export default defineComponent({
       try {
         await menuSrv.enable(item.id);
         await queryTableData();
-        await store.dispatch("menu/refreshMenuTree");
+        await refreshAllMenu();
       } catch (error) {}
 
       loading.value = false;
@@ -185,10 +223,15 @@ export default defineComponent({
       try {
         await menuSrv.disable(item.id);
         await queryTableData();
-        await store.dispatch("menu/refreshMenuTree");
+        await refreshAllMenu();
       } catch (error) {}
 
       loading.value = false;
+    }
+
+    function onMenuModalSubmit() {
+      queryTableData();
+      refreshAllMenu();
     }
 
     onMounted(() => {
@@ -196,6 +239,7 @@ export default defineComponent({
     });
 
     return {
+      MenuModal,
       loading,
       columns,
       tabelData,
@@ -203,9 +247,12 @@ export default defineComponent({
       statusModel,
       showStatusModel,
       handleSearch,
+      handleAdd,
+      handleEdit,
       handleRemove,
       handleEnable,
       handleDisable,
+      onMenuModalSubmit,
       ...menuTree,
     };
   },
@@ -215,30 +262,30 @@ export default defineComponent({
  * 处理菜单树
  * */
 function useMenuTree() {
-  const stroe = useStore();
+  const store = useStore();
 
   const replaceFields = { children: "children", title: "name", key: "id" };
   const treeData = computed(() => store.getters["menu/asideMenuTree"]);
   const selectedKeys = computed({
     get: () => {
-      return stroe.getters["menu/selectedKeys"];
+      return store.getters["menu/selectedKeys"];
     },
     set: (val) => {
-      stroe.commit("menu/changeAsideSelectedKeys", val);
+      store.commit("menu/changeAsideSelectedKeys", val);
     },
   });
 
   const expandedKeys = computed({
     get: () => {
-      return stroe.getters["menu/expandedKeys"];
+      return store.getters["menu/expandedKeys"];
     },
     set: (val) => {
-      stroe.commit("menu/changeAsideExpandedKeys", val);
+      store.commit("menu/changeAsideExpandedKeys", val);
     },
   });
 
   onMounted(async () => {
-    await stroe.dispatch("menu/refreshMenuTree");
+    await store.dispatch("menu/refreshMenuTree");
   });
 
   return {

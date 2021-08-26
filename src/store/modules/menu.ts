@@ -40,6 +40,20 @@ const getters: GetterTree<IMenuState, any> = {
     asideMenuTree(state) {
         return state.aside.menuTree
     },
+    asideMenuMap(state): { [index: string]: IMenuTree } {
+        const menuMap: { [index: string]: IMenuTree } = {}
+        function flattening(trees: Array<IMenuTree>) {
+            for (const tree of trees) {
+                tree.router && (menuMap[tree.router] = tree)
+                tree.id && (menuMap[tree.id] = tree)
+                if (Array.isArray(tree.children)) {
+                    flattening(tree.children)
+                }
+            }
+        }
+        flattening(state.aside.menuTree || {})
+        return menuMap
+    },
     expandedKeys(state) {
         return state.aside.expandedKeys
     },
@@ -48,6 +62,11 @@ const getters: GetterTree<IMenuState, any> = {
     },
     selectedKey(state, getters) {
         return getters.selectedKeys[0]
+    },
+    selectedMenu(state, getters): IMenuTree | undefined {
+        const map = getters.asideMenuMap
+        const key = getters.selectedKey
+        return map[key]
     }
 }
 

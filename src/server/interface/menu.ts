@@ -20,8 +20,8 @@ export interface IQueryMenuParams extends IPageParams {
 }
 
 export interface IMenuItem {
-    createdAt: string,
-    creator: string,
+    createdAt?: string,
+    creator?: string,
     icon: string,
     id: string,
     memo: string,
@@ -32,5 +32,5 @@ export interface IMenuItem {
     sequence: number,
     showStatus: EShowStatus,
     status: EStatus,
-    updatedAt: string,
+    updatedAt?: string,
 }

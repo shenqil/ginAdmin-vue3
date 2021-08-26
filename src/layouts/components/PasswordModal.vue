@@ -34,8 +34,8 @@
 import { RuleObject } from "ant-design-vue/es/form/interface";
 import { defineComponent, ref, reactive, computed, WritableComputedRef } from "vue";
 import { Form } from "ant-design-vue";
-import { updatePassword } from "../../server/login";
-import { md5Hash } from "../../utils/security";
+import { updatePassword } from "@/server/login";
+import { md5Hash } from "@/utils/security";
 
 interface IProps {
   modelValue: boolean;
