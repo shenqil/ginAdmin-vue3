@@ -19,6 +19,11 @@ export default {
             name: 'systemUser',
             path: 'user',
             component: () => import(/* webpackChunkName: "systemUser" */ '@/views/system/user/index.vue'),
+        },
+        {
+            name: 'systemRouterResource',
+            path: 'routerResource',
+            component: () => import(/* webpackChunkName: "systemRouterResource"*/ '@/views/system/routerResource/index.vue')
         }
     ]
 }

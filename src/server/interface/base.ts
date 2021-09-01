@@ -46,3 +46,17 @@ export interface IError {
     code: number,
     message: string
 }
+
+/**
+ * 响应唯一标识
+ * */
+export interface IIdResult {
+    id: string
+}
+
+/**
+ * 响应状态
+ * */
+export interface IStatusResult {
+    status: string
+}

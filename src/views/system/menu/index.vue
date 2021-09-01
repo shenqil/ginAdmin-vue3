@@ -174,7 +174,7 @@ export default defineComponent({
      * 查询列表数据
      * */
     async function queryTableData() {
-      const res = await menuSrv.getList(queryParams.value);
+      const res = await menuSrv.query(queryParams.value);
       tabelData.value = res.list;
       pageParams.value = res.pagination;
     }
