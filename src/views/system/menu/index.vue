@@ -26,7 +26,7 @@
 
         <div class="menu__fliter-right">
           <a-input
-            v-model:value="searchName"
+            v-model:value="queryParams.queryValue"
             placeholder="请输入名称或备注"
             class="menu__fliter-right-input"
           />
@@ -38,10 +38,16 @@
       </div>
 
       <div class="menu__tabel">
-        <a-table :columns="columns" :data-source="tabelData" rowKey="id" bordered>
+        <a-table
+          :columns="columns"
+          :data-source="tabelData"
+          :pagination="false"
+          rowKey="id"
+          bordered
+        >
           <template #filterStatus>
             <div class="menu__tabel-filter">
-              <a-checkbox-group v-model:value="statusModel">
+              <a-checkbox-group v-model:value="filterStatus">
                 <a-row>
                   <a-checkbox value="1">启用</a-checkbox>
                 </a-row>
@@ -95,6 +101,16 @@
             </div>
           </template>
         </a-table>
+        <div class="menu__tabel-pagination">
+          <a-pagination
+            show-size-changer
+            v-model:current="queryParams.current"
+            v-model:pageSize="queryParams.pageSize"
+            :total="total"
+            @change="handlePage"
+            @showSizeChange="handlePageSize"
+          />
+        </div>
       </div>
     </div>
 
@@ -106,7 +122,7 @@
 import { computed, defineComponent, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
 import menuSrv from "@/server/menu";
-import { IMenuItem, IPageParams, IQueryMenuParams } from "@/server/interface";
+import { IMenuItem, IQueryMenuParams } from "@/server/interface";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import MenuModal from "./components/MenuModal.vue";
 
@@ -121,46 +137,44 @@ export default defineComponent({
     const loading = ref(false);
 
     // 对vue虚拟Dom的引用
-    const MenuModal = ref<any>(null);
+    const MenuModal = ref();
+
+    /*-----------------------菜单树----------------------*/
+    const menuTree = useMenuTree();
 
     /*-----------------------------表单数据---------------------------*/
-    const statusModel = ref([]);
-    const showStatusModel = ref([]);
-    const columns = tableColumns();
-    const pageParams = ref<IPageParams>({
-      current: 0,
+    const queryParams = ref<IQueryMenuParams>({
+      queryValue: "",
+      parentID: store.getters["menu/selectedKey"],
+      status: 0,
+      current: 1,
       pageSize: 10,
     });
+    const filterStatus = ref([]);
+    const total = ref(0);
     const tabelData = ref<Array<IMenuItem>>([]);
-
-    /**
-     * 参数依赖发生变化，自动更新参数
-     * */
-    const queryParams = computed<IQueryMenuParams>(() => {
-      const status = statusModel.value.length === 1 ? statusModel.value[0] : undefined;
-      const showStatus =
-        showStatusModel.value.length === 1 ? showStatusModel.value[0] : undefined;
-      const params: IQueryMenuParams = {
-        current: pageParams.value.current,
-        pageSize: pageParams.value.pageSize,
-        parentID: store.getters["menu/selectedKey"],
-        queryValue: searchName.value,
-        status,
-        showStatus,
-      };
-
-      return params;
-    });
 
     /**
      * 选中的父级发生变化，自动刷新列表
      * */
     watch(
       () => store.getters["menu/selectedKeys"],
-      () => {
+      (v) => {
+        queryParams.value.parentID = v;
         queryTableData();
       }
     );
+    watch(filterStatus, (v) => {
+      if (v.length == 1) {
+        queryParams.value.status = Number(v[0]);
+      } else {
+        queryParams.value.status = 0;
+      }
+    });
+
+    onMounted(() => {
+      queryTableData();
+    });
 
     /**
      * 刷新所有菜单
@@ -176,14 +190,12 @@ export default defineComponent({
     async function queryTableData() {
       const res = await menuSrv.query(queryParams.value);
       tabelData.value = res.list;
-      pageParams.value = res.pagination;
+      queryParams.value.current = res.pagination.current;
+      queryParams.value.pageSize = res.pagination.pageSize;
+      total.value = res.pagination.total;
     }
 
-    /*-----------------------菜单树----------------------*/
-    const menuTree = useMenuTree();
-
     /*-------------------------输入框搜索----------------------*/
-    const searchName = ref<string>();
     function handleSearch() {
       queryTableData();
     }
@@ -229,23 +241,28 @@ export default defineComponent({
       loading.value = false;
     }
 
+    function handlePage() {
+      queryTableData();
+    }
+
+    function handlePageSize() {
+      queryParams.value.current = 1;
+      queryTableData();
+    }
+
     function onMenuModalSubmit() {
       queryTableData();
       refreshAllMenu();
     }
 
-    onMounted(() => {
-      queryTableData();
-    });
-
     return {
       MenuModal,
       loading,
-      columns,
+      columns: tableColumns(),
+      total,
+      filterStatus,
+      queryParams,
       tabelData,
-      searchName,
-      statusModel,
-      showStatusModel,
       handleSearch,
       handleAdd,
       handleEdit,
@@ -253,6 +270,8 @@ export default defineComponent({
       handleEnable,
       handleDisable,
       onMenuModalSubmit,
+      handlePage,
+      handlePageSize,
       ...menuTree,
     };
   },
@@ -372,6 +391,13 @@ function tableColumns() {
       flex-flow: row;
       justify-content: space-between;
       max-width: 150px;
+    }
+    &-pagination {
+      padding-top: 20px;
+      width: 100%;
+      display: flex;
+      flex-flow: row;
+      justify-content: flex-end;
     }
   }
 }
