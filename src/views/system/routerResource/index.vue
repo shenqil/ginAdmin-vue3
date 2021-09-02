@@ -95,6 +95,8 @@
         />
       </div>
     </div>
+
+    <EditModal ref="EditModal" @on-submit="onEditModalSubmit" />
   </div>
 </template>
 
@@ -103,13 +105,16 @@ import { defineComponent, ref, onMounted, watch } from "vue";
 import { IRouterResource, IRouterResourceQueryParam } from "@/server/interface";
 import routerResourceSrv from "@/server/routerResource";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
+import EditModal from "./components/EditModal.vue";
 
 export default defineComponent({
   components: {
     SearchOutlined,
     PlusOutlined,
+    EditModal,
   },
   setup() {
+    const EditModal = ref();
     const total = ref(0);
     const filterStatus = ref([]);
     const tabelData = ref<Array<IRouterResource>>([]);
@@ -144,9 +149,13 @@ export default defineComponent({
       queryData();
     }
 
-    function handleAdd() {}
+    function handleAdd() {
+      EditModal.value.show();
+    }
 
-    function handleEdit(item: IRouterResource) {}
+    function handleEdit(item: IRouterResource) {
+      EditModal.value.show(item);
+    }
 
     async function handleRemove(item: IRouterResource) {
       await routerResourceSrv.remove(item.id);
@@ -172,7 +181,12 @@ export default defineComponent({
       queryData();
     }
 
+    function onEditModalSubmit() {
+      queryData();
+    }
+
     return {
+      EditModal,
       total,
       queryParams,
       tabelData,
@@ -186,6 +200,7 @@ export default defineComponent({
       handleDisable,
       handlePage,
       handlePageSize,
+      onEditModalSubmit,
     };
   },
 });

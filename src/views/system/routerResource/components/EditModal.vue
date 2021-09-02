@@ -8,20 +8,17 @@
     @ok="handleOk"
   >
     <a-form :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
-      <a-form-item label="父级菜单" v-if="fatherName">
-        <div>{{ fatherName }}</div>
-      </a-form-item>
-      <a-form-item label="菜单名称" v-bind="validateInfos.name">
+      <a-form-item label="资源名称" v-bind="validateInfos.name">
         <a-input
           v-model:value="formData.name"
           @blur="validate('name', { trigger: 'blur' }).catch(() => {})"
         />
       </a-form-item>
-      <a-form-item label="菜单路由">
-        <a-input v-model:value="formData.router" />
+      <a-form-item label="路径">
+        <a-input v-model:value="formData.path" />
       </a-form-item>
-      <a-form-item label="排序">
-        <a-input-number v-model:value="formData.sequence" :min="1" :max="99" />
+      <a-form-item label="方法">
+        <a-input v-model:value="formData.method" />
       </a-form-item>
       <a-form-item label="备注">
         <a-textarea v-model:value="formData.memo" :rows="4" />
@@ -37,17 +34,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, reactive } from "vue";
-import { IMenuItem } from "@/server/interface";
-import menuSvr from "@/server/menu";
+import { defineComponent, ref, reactive } from "vue";
+import { IRouterResource } from "@/server/interface";
+import routerResourceSvr from "@/server/routerResource";
 import { Form } from "ant-design-vue";
-import { useStore } from "vuex";
 import { message } from "ant-design-vue";
 
 const useForm = Form.useForm;
 const visible = ref(false);
 const confirmLoading = ref(false);
-const formData = ref<IMenuItem>();
+const formData = ref<IRouterResource>();
 
 export default defineComponent({
   props: {},
@@ -55,36 +51,26 @@ export default defineComponent({
     "on-submit": null,
   },
   setup(props, context) {
-    const store = useStore();
-
-    const title = ref("增加菜单");
-    const fatherName = ref("");
+    const title = ref("增加路由资源");
 
     /**
      * 外部调用
      * */
-    function show(item: IMenuItem | undefined) {
+    function show(item: IRouterResource | undefined) {
       visible.value = true;
 
-      const selectedMenu = (store.getters["menu/selectedMenu"] || {}) as IMenuItem;
-      fatherName.value = selectedMenu.name;
-
       if (!item) {
-        title.value = "增加菜单";
+        title.value = "增加路由资源";
         formData.value = {
           id: "",
-          icon: "",
           name: "",
           memo: "",
-          parentId: selectedMenu.id || "",
-          parentPath: selectedMenu.id || "",
-          router: "",
-          sequence: 0,
+          method: "",
+          path: "",
           status: 1,
-          showStatus: 1,
         };
       } else {
-        title.value = "编辑菜单";
+        title.value = "编辑路由资源";
         formData.value = item;
       }
     }
@@ -95,7 +81,6 @@ export default defineComponent({
       title,
       visible,
       confirmLoading,
-      fatherName,
       formData,
       ...menuForm,
       show,
@@ -117,6 +102,20 @@ function useMenuForm(context: any) {
           trigger: "blur",
         },
       ],
+      method: [
+        {
+          required: true,
+          message: "必填项",
+          trigger: "blur",
+        },
+      ],
+      path: [
+        {
+          required: true,
+          message: "必填项",
+          trigger: "blur",
+        },
+      ],
     })
   );
 
@@ -125,12 +124,12 @@ function useMenuForm(context: any) {
       confirmLoading.value = true;
       try {
         if (formData.value?.id) {
-          await menuSvr.update(formData.value);
-          message.success("菜单创建成功");
+          await routerResourceSvr.update(formData.value);
+          message.success("资源创建成功");
         } else {
           if (formData.value) {
-            await menuSvr.create(formData.value as IMenuItem);
-            message.success("菜单更新成功");
+            await routerResourceSvr.create(formData.value);
+            message.success("资源更新成功");
           }
         }
 
