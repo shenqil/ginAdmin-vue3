@@ -158,7 +158,7 @@ export default defineComponent({
      * 选中的父级发生变化，自动刷新列表
      * */
     watch(
-      () => store.getters["menu/selectedKeys"],
+      () => store.getters["menu/selectedKey"],
       (v) => {
         queryParams.value.parentID = v;
         queryTableData();
