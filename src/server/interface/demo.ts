@@ -13,4 +13,5 @@ export interface IDemo {
 
 export interface IDemoQueryParam extends IPageParams {
     queryValue?: string
+    status?: number
 }

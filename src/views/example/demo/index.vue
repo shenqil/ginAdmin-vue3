@@ -116,11 +116,21 @@ export default defineComponent({
   setup() {
     const EditModal = ref();
     const total = ref(0);
+    const filterStatus = ref([]);
     const tabelData = ref<Array<IDemo>>([]);
     const queryParams = ref<IDemoQueryParam>({
       queryValue: "",
       current: 1,
+      status: 0,
       pageSize: 10,
+    });
+
+    watch(filterStatus, (v) => {
+      if (v.length == 1) {
+        queryParams.value.status = Number(v[0]);
+      } else {
+        queryParams.value.status = 0;
+      }
     });
 
     onMounted(() => {
@@ -180,6 +190,7 @@ export default defineComponent({
       total,
       queryParams,
       tabelData,
+      filterStatus,
       columns: tableColumns(),
       handleSearch,
       handleAdd,
@@ -219,6 +230,7 @@ function tableColumns() {
       key: "status",
       dataIndex: "status",
       slots: {
+        filterDropdown: "filterStatus",
         customRender: "status",
       },
     },

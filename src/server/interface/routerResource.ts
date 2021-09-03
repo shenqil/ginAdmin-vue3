@@ -13,6 +13,7 @@ export interface IRouterResource {
 }
 
 export interface IRouterResourceQueryParam extends IPageParams {
+    roleId?: string
     queryValue?: string
     status?: number
 }
