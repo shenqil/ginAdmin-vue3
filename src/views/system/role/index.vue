@@ -159,7 +159,7 @@ export default defineComponent({
     }
 
     function handleEdit(item: IRole) {
-      EditModal.value.show(item);
+      EditModal.value.show(JSON.parse(JSON.stringify(item)));
     }
 
     async function handleRemove(item: IRole) {
@@ -187,7 +187,7 @@ export default defineComponent({
     }
 
     function handleEditResourceModal(item: IRole) {
-      EditResourceModal.value.show(item);
+      EditResourceModal.value.show(JSON.parse(JSON.stringify(item)));
     }
 
     function onEditModalSubmit() {

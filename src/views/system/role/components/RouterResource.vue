@@ -26,10 +26,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, PropType, computed } from "vue";
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  PropType,
+  computed,
+  watch,
+  reactive,
+} from "vue";
 import { TableState, TableStateFilters } from "ant-design-vue/es/table/interface";
 import { IRouterResource, IRole, IRouterResourceQueryParam } from "@/server/interface";
 import routerResourceSrv from "@/server/routerResource";
+import roleSrv from "@/server/role";
+import { message } from "ant-design-vue";
 
 type Pagination = TableState["pagination"];
 
@@ -63,6 +73,7 @@ const rightTableColumns = [
   },
 ];
 
+const excludeIDs = ref<string[]>([]);
 export default defineComponent({
   props: {
     role: {
@@ -88,12 +99,17 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      leftTable.leftQueryData();
-      rightTable.rightQueryData();
+      queryData();
     });
+
+    async function queryData() {
+      await rightTable.rightQueryData();
+      await leftTable.leftQueryData();
+    }
 
     const onChange = (nextTargetKeys: string[]) => {
       rightTable.targetKeys.value = nextTargetKeys;
+      submit();
     };
 
     const getRowSelection = ({ selectedKeys, onItemSelect }: Record<string, any>) => {
@@ -105,12 +121,29 @@ export default defineComponent({
       };
     };
 
+    async function submit() {
+      const role = props.role;
+      role.roleRouters = rightTable.targetKeys.value.map((id) => {
+        return {
+          roleId: role.id,
+          routerId: id,
+        };
+      });
+
+      await roleSrv.update(role);
+      leftTable.routerResorceParams.value.current = 1;
+      await queryData();
+
+      message.success("更新成功");
+    }
+
     return {
       ...leftTable,
       ...rightTable,
       dataSource,
       onChange,
       getRowSelection,
+      submit,
     };
   },
 });
@@ -118,7 +151,6 @@ export default defineComponent({
 function useLeftTable() {
   const total = ref(0);
   const routerResorceParams = ref<IRouterResourceQueryParam>({
-    queryValue: "",
     current: 1,
     pageSize: 10,
     status: 1,
@@ -135,6 +167,8 @@ function useLeftTable() {
     };
   });
 
+  watch(excludeIDs, (v) => (routerResorceParams.value.excludeIDs = v));
+
   function onPageChange(current: number) {
     routerResorceParams.value.current = current;
     queryData();
@@ -149,6 +183,7 @@ function useLeftTable() {
   }
 
   return {
+    routerResorceParams,
     routerResorceData,
     leftColumns,
     leftPagination,
@@ -157,29 +192,25 @@ function useLeftTable() {
 }
 
 function useRightTable(role: IRole) {
-  const total = ref(0);
   const targetData = ref<IRouterResource[]>([]);
   const targetKeys = ref<string[]>([]);
   const rightColumns = ref(rightTableColumns);
   const routerResorceParams = ref<IRouterResourceQueryParam>({
-    queryValue: "",
     roleId: role.id,
     current: 1,
-    pageSize: 10,
+    pageSize: 100,
     status: 1,
   });
 
-  const rightPagination = computed<Pagination>(() => {
-    return {
-      current: routerResorceParams.value.current,
-      pageSize: routerResorceParams.value.pageSize,
-      total: total.value,
-      "onUpdate:current": onPageChange,
-    };
+  const rightPagination = reactive({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+    "onUpdate:current": onPageChange,
   });
 
   function onPageChange(current: number) {
-    routerResorceParams.value.current = current;
+    rightPagination.current = current;
     queryData();
   }
 
@@ -187,9 +218,8 @@ function useRightTable(role: IRole) {
     const res = await routerResourceSrv.query(routerResorceParams.value);
     targetData.value = res.list;
     targetKeys.value = res.list.map((item) => item.id);
-    routerResorceParams.value.current = res.pagination.current;
-    routerResorceParams.value.pageSize = res.pagination.pageSize;
-    total.value = res.pagination.total;
+    rightPagination.total = res.pagination.total;
+    excludeIDs.value = res.list.map((item) => item.id);
   }
 
   return {

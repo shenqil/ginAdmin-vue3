@@ -14,6 +14,7 @@ export interface IRouterResource {
 
 export interface IRouterResourceQueryParam extends IPageParams {
     roleId?: string
+    excludeIDs?: Array<string>,
     queryValue?: string
     status?: number
 }
