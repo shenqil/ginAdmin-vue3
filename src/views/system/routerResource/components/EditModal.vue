@@ -125,11 +125,11 @@ function useMenuForm(context: any) {
       try {
         if (formData.value?.id) {
           await routerResourceSvr.update(formData.value);
-          message.success("资源创建成功");
+          message.success("资源更新成功");
         } else {
           if (formData.value) {
             await routerResourceSvr.create(formData.value);
-            message.success("资源更新成功");
+            message.success("资源创建成功");
           }
         }
 

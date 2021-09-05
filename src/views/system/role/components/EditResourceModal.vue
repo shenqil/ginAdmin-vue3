@@ -2,7 +2,6 @@
   <a-modal
     v-model:visible="visible"
     :title="title"
-    @ok="handleOk"
     :footer="null"
     width="100%"
     wrapClassName="full-modal"

@@ -126,11 +126,11 @@ function useMenuForm(context: any) {
       try {
         if (formData.value?.id) {
           await menuSvr.update(formData.value);
-          message.success("菜单创建成功");
+          message.success("菜单更新成功");
         } else {
           if (formData.value) {
             await menuSvr.create(formData.value as IMenuItem);
-            message.success("菜单更新成功");
+            message.success("菜单创建成功");
           }
         }
 

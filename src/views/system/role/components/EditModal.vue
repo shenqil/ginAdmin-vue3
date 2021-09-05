@@ -107,11 +107,11 @@ function useMenuForm(context: any) {
       try {
         if (formData.value?.id) {
           await roleSvr.update(formData.value);
-          message.success("创建成功");
+          message.success("更新成功");
         } else {
           if (formData.value) {
             await roleSvr.create(formData.value);
-            message.success("更新成功");
+            message.success("创建成功");
           }
         }
 

@@ -28,7 +28,7 @@ class TokenManage {
             clearTimeout(this.refreshTimeout)
         }
 
-        console.log(lastAccessTime, '时间后刷新token')
+        console.log(lastAccessTime / 60 * 60 * 1000, '时间后刷新token')
         this.refreshTimeout = setTimeout(() => {
             this.refreshTask()
             console.log("token已刷新")
