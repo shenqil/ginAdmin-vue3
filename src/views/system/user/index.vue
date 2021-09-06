@@ -49,7 +49,7 @@
         <template #actions="{ record }">
           <div class="user__tabel-actions">
             <a href="#" @click="handleEdit(record)">编辑信息</a>
-            <a href="#">分配角色</a>
+            <a href="#" @click="handleEditResource(record)">分配角色</a>
             <a-popconfirm
               placement="left"
               title="确认要删除该菜单?"
@@ -98,6 +98,7 @@
     </div>
 
     <EditModal ref="EditModal" @on-submit="onEditModalSubmit" />
+    <EditResourceModal ref="EditResourceModal" />
   </div>
 </template>
 
@@ -107,15 +108,18 @@ import { IUserQueryParam, IUser } from "@/server/interface";
 import userSrv from "@/server/user";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import EditModal from "./components/EditModal.vue";
+import EditResourceModal from "./components/EditResourceModal.vue";
 
 export default defineComponent({
   components: {
     SearchOutlined,
     PlusOutlined,
     EditModal,
+    EditResourceModal,
   },
   setup() {
     const EditModal = ref();
+    const EditResourceModal = ref();
     const total = ref(0);
     const filterStatus = ref([]);
     const tabelData = ref<Array<IUser>>([]);
@@ -158,6 +162,10 @@ export default defineComponent({
       EditModal.value.show(JSON.parse(JSON.stringify(item)));
     }
 
+    function handleEditResource(item: IUser) {
+      EditResourceModal.value.show(JSON.parse(JSON.stringify(item)));
+    }
+
     async function handleRemove(item: IUser) {
       await userSrv.remove(item.id);
       await queryData();
@@ -188,6 +196,7 @@ export default defineComponent({
 
     return {
       EditModal,
+      EditResourceModal,
       total,
       queryParams,
       tabelData,
@@ -201,6 +210,7 @@ export default defineComponent({
       handleDisable,
       handlePage,
       handlePageSize,
+      handleEditResource,
       onEditModalSubmit,
     };
   },

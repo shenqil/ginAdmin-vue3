@@ -1,4 +1,5 @@
-import { IPageParams } from './base'
+import { IPageParams, IPageData } from './base'
+import { IRole } from './role'
 
 export interface IUserRole {
     userId: string,
@@ -22,4 +23,12 @@ export interface IUserQueryParam extends IPageParams {
     queryValue?: string
     userName?: string
     status?: number
+}
+
+/**
+ * 通过用户获取的角色
+ * */
+export interface IRoleResultByUser {
+    exist: Array<IRole>, // 当前用户下存在的角色
+    notExist: IPageData<IRole>  // 当前用户下不存在的角色
 }

@@ -137,23 +137,23 @@ function useMenuForm(context: any) {
           trigger: "blur",
         },
       ],
-      password: [
-        {
-          required: true,
-          message: "必填项",
-          trigger: "blur",
-        },
-        {
-          validator: async (rule: RuleObject, value: string) => {
-            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,16}$/.test(value)) {
-              return Promise.reject("需要8-16个包含大小写字母和数字的字符");
-            } else {
-              return Promise.resolve();
-            }
-          },
-          trigger: "blur",
-        },
-      ],
+      // password: [
+      //   {
+      //     required: true,
+      //     message: "必填项",
+      //     trigger: "blur",
+      //   },
+      //   {
+      //     validator: async (rule: RuleObject, value: string) => {
+      //       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,16}$/.test(value)) {
+      //         return Promise.reject("需要8-16个包含大小写字母和数字的字符");
+      //       } else {
+      //         return Promise.resolve();
+      //       }
+      //     },
+      //     trigger: "blur",
+      //   },
+      // ],
       phone: [
         {
           required: true,

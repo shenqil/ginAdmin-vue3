@@ -4,7 +4,8 @@ import {
     IUserQueryParam,
     IPageData,
     IIdResult,
-    IStatusResult
+    IStatusResult,
+    IRoleResultByUser
 } from './interface/index'
 
 const CURRENT_URL = '/api/v1/management/users'
@@ -13,10 +14,7 @@ const CURRENT_URL = '/api/v1/management/users'
  * 查询数据
  * */
 async function query(params: IUserQueryParam): Promise<IPageData<IUser>> {
-    return await axios.get(CURRENT_URL,
-        {
-            params
-        })
+    return await axios.get(CURRENT_URL, { params })
 }
 
 /**
@@ -61,6 +59,13 @@ async function enable(id: string): Promise<IStatusResult> {
     return await axios.patch(`${CURRENT_URL}/${id}/enable`)
 }
 
+/**
+ * 查询指定用户下的角色
+ * */
+async function getRoles(userID: string, params: IUserQueryParam): Promise<IRoleResultByUser> {
+    return await axios.get(`${CURRENT_URL}/${userID}/roles`, { params })
+}
+
 export default {
     query,
     create,
@@ -68,5 +73,6 @@ export default {
     update,
     remove,
     disable,
-    enable
+    enable,
+    getRoles
 }
