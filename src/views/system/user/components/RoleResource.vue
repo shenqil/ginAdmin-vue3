@@ -26,15 +26,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  PropType,
-  computed,
-  watch,
-  reactive,
-} from "vue";
+import { defineComponent, ref, onMounted, PropType, computed, reactive } from "vue";
 import { TableState } from "ant-design-vue/es/table/interface";
 import { IUserQueryParam, IUser, IRoleResultByUser, IRole } from "@/server/interface";
 import userSrv from "@/server/user";
@@ -110,7 +102,10 @@ export default defineComponent({
         current: leftParasm.value.current,
         pageSize: leftParasm.value.pageSize,
         total: leftTotal.value,
-        "onUpdate:current": onLeftPageChange,
+        "onUpdate:current": function (current: number) {
+          leftParasm.value.current = current;
+          queryData();
+        },
       };
     });
 
@@ -129,11 +124,6 @@ export default defineComponent({
 
       rightResult.value = exist;
       targetKeys.value = exist.map((item) => item.id);
-    }
-
-    function onLeftPageChange(current: number) {
-      leftParasm.value.current = current;
-      queryData();
     }
 
     const onChange = (nextTargetKeys: string[]) => {

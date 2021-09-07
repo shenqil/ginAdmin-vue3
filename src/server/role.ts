@@ -4,7 +4,8 @@ import {
     IRoleQueryParam,
     IPageData,
     IIdResult,
-    IStatusResult
+    IStatusResult,
+    IRouterResultByRole
 } from './interface/index'
 
 const CURRENT_URL = '/api/v1/management/roles'
@@ -61,6 +62,14 @@ async function enable(id: string): Promise<IStatusResult> {
     return await axios.patch(`${CURRENT_URL}/${id}/enable`)
 }
 
+/**
+ * 查询指定角色下的路由资源
+ * */
+async function getRouter(roleID: string, params: IRoleQueryParam): Promise<IRouterResultByRole> {
+    return await axios.get(`${CURRENT_URL}/${roleID}/routers`, { params })
+}
+
+
 export default {
     query,
     create,
@@ -68,5 +77,6 @@ export default {
     update,
     remove,
     disable,
-    enable
+    enable,
+    getRouter
 }
