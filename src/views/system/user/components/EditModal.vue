@@ -56,6 +56,7 @@ import { Form } from "ant-design-vue";
 import { message } from "ant-design-vue";
 import { RuleObject } from "ant-design-vue/es/form/interface";
 import { md5Hash } from "@/utils/security";
+import { useStore } from "vuex";
 
 const useForm = Form.useForm;
 const visible = ref(false);
@@ -137,32 +138,23 @@ function useMenuForm(context: any) {
           trigger: "blur",
         },
       ],
-      // password: [
-      //   {
-      //     required: true,
-      //     message: "必填项",
-      //     trigger: "blur",
-      //   },
-      //   {
-      //     validator: async (rule: RuleObject, value: string) => {
-      //       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,16}$/.test(value)) {
-      //         return Promise.reject("需要8-16个包含大小写字母和数字的字符");
-      //       } else {
-      //         return Promise.resolve();
-      //       }
-      //     },
-      //     trigger: "blur",
-      //   },
-      // ],
-      phone: [
+      password: [
         {
-          required: true,
-          message: "必填项",
+          validator: async (rule: RuleObject, value: string) => {
+            if (value && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,16}$/.test(value)) {
+              return Promise.reject("需要8-16个包含大小写字母和数字的字符");
+            } else {
+              return Promise.resolve();
+            }
+          },
           trigger: "blur",
         },
+      ],
+      phone: [
         {
           validator: async (rule: RuleObject, value: string) => {
             if (
+              value &&
               !/^1(3\d|4[5-9]|5[0-35-9]|6[567]|7[0-8]|8\d|9[0-35-9])\d{8}$/.test(value)
             ) {
               return Promise.reject("非法的手机号");
@@ -175,13 +167,9 @@ function useMenuForm(context: any) {
       ],
       email: [
         {
-          required: true,
-          message: "必填项",
-          trigger: "blur",
-        },
-        {
           validator: async (rule: RuleObject, value: string) => {
             if (
+              value &&
               !/^([a-zA-Z0-9]+[_|_|\-|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/.test(
                 value
               )
@@ -202,7 +190,11 @@ function useMenuForm(context: any) {
       confirmLoading.value = true;
       try {
         if (formData.value?.id) {
-          await userSvr.update(formData.value);
+          const userInfo = {
+            ...formData.value,
+          };
+          userInfo.password = md5Hash((userInfo.password || "").trim());
+          await userSvr.update(userInfo);
           message.success("更新成功");
         } else {
           if (formData.value) {
