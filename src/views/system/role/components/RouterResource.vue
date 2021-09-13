@@ -13,7 +13,7 @@
         :data-source="filteredItems"
         size="small"
         :custom-row="
-          ({ key }) => ({
+          ({ key = '' }) => ({
             onClick: () => {
               onItemSelect(key, !selectedKeys.includes(key));
             },

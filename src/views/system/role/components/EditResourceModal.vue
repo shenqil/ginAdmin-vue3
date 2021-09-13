@@ -7,7 +7,7 @@
     wrapClassName="full-modal"
   >
     <a-tabs v-model:activeKey="activeTab">
-      <a-tab-pane key="routerResourceType" tab="路由资源">
+      <a-tab-pane key="routerResourceType" tab="路由资源" v-if="roleItem">
         <RouterResource :role="roleItem" />
       </a-tab-pane>
     </a-tabs>

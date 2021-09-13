@@ -7,7 +7,7 @@
     wrapClassName="full-modal"
   >
     <a-tabs v-model:activeKey="activeTab">
-      <a-tab-pane key="roleType" tab="角色分配">
+      <a-tab-pane key="roleType" tab="角色分配" v-if="userItem">
         <RoleResource :user="userItem" />
       </a-tab-pane>
     </a-tabs>

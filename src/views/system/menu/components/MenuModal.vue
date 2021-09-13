@@ -7,7 +7,12 @@
     cancelText="取消"
     @ok="handleOk"
   >
-    <a-form :model="formData" :label-col="labelCol" :wrapper-col="wrapperCol">
+    <a-form
+      v-if="formData"
+      :model="formData"
+      :label-col="labelCol"
+      :wrapper-col="wrapperCol"
+    >
       <a-form-item label="父级菜单" v-if="fatherName">
         <div>{{ fatherName }}</div>
       </a-form-item>
