@@ -8,7 +8,7 @@
   >
     <a-tabs v-model:activeKey="activeTab">
       <a-tab-pane key="routerResourceType" tab="路由资源" v-if="roleItem">
-        <RouterResource :role="roleItem" />
+        <RouterResource :role="roleItem" :key="roleItem.id" />
       </a-tab-pane>
     </a-tabs>
   </a-modal>
