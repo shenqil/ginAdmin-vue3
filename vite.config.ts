@@ -18,9 +18,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // 选项写法
       '/api': {
-        target: 'http://localhost:10088/',
+        target: 'http://localhost:8080/',
+        changeOrigin: true,
+      },
+      '/files': {
+        target: 'http://localhost:8080/',
         changeOrigin: true,
       },
     }

@@ -8,6 +8,7 @@ export interface IUserRole {
 
 export interface IUser {
     id: string,
+    avatar:string,
     userName: string,
     realName: string,
     password?: string,

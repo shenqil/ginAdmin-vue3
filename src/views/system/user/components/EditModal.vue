@@ -13,6 +13,25 @@
       :label-col="labelCol"
       :wrapper-col="wrapperCol"
     >
+
+      <a-form-item label="头像" v-bind="validateInfos.avatar">    
+        <a-upload
+          name="avatar"
+          list-type="picture-card"
+          class="avatar-uploader"
+          :show-upload-list="false"
+          :customRequest="customUpload"
+        >
+          <img v-if="formData.avatar" :src="fileServer+formData.avatar" alt="avatar" width="100" height="100"/>
+          <div v-else>
+            <LoadingOutlined v-show="uploadLoading"/>
+            <div class="ant-upload-text">
+              Upload
+            </div>
+          </div>
+        </a-upload>
+      </a-form-item>
+
       <a-form-item label="用户名" v-bind="validateInfos.userName">
         <a-input
           v-model:value="formData.userName"
@@ -54,37 +73,49 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive,computed } from "vue";
 import { IUser } from "@/server/interface";
 import userSvr from "@/server/user";
-import { Form } from "ant-design-vue";
-import { message } from "ant-design-vue";
+import commSrv from "@/server/comm";
+import { Form,message } from "ant-design-vue";
 import { RuleObject } from "ant-design-vue/es/form/interface";
+import {
+  LoadingOutlined,
+} from '@ant-design/icons-vue';
 import { md5Hash } from "@/utils/security";
-import { useStore } from "vuex";
+import uploadFile from '@/utils/uploadFile'
+import {useStore} from 'vuex'
 
 const useForm = Form.useForm;
 const visible = ref(false);
 const confirmLoading = ref(false);
+const uploadLoading = ref(false);
 const formData = ref<IUser>();
 
 export default defineComponent({
+  components: {
+    LoadingOutlined,
+  },
   props: {},
   emits: {
     "on-submit": null,
   },
   setup(props, context) {
-    const title = ref("增加");
+    const store = useStore()
 
+    const title = ref("增加");
+    const fileServer = computed(() => store.state.comm.fileServer)
     /**
      * 外部调用
      * */
     function show(item: IUser | undefined) {
       visible.value = true;
+      uploadLoading.value = false;
 
       if (!item) {
         title.value = "创建用户";
         formData.value = {
+          avatar:"",
           id: "",
           userName: "",
           realName: "",
@@ -97,15 +128,34 @@ export default defineComponent({
       }
     }
 
+    /**
+     * 自定义上传事件
+     * */ 
+     function customUpload(e:any){
+      uploadLoading.value = true
+      uploadFile(e.file as File,undefined)
+        .then((res)=>{
+          if(formData.value){
+            formData.value.avatar = res as string
+          }
+        })
+        .finally(()=>{
+          uploadLoading.value = false
+        })
+    }
+
     const menuForm = useMenuForm(context);
 
     return {
       title,
+      fileServer,
       visible,
       confirmLoading,
+      uploadLoading,
       formData,
       ...menuForm,
       show,
+      customUpload
     };
   },
 });
@@ -194,6 +244,13 @@ function useMenuForm(context: any) {
     validate().then(async () => {
       confirmLoading.value = true;
       try {
+        // 不存在头像
+        if(!formData.value?.avatar){
+          if(formData.value){
+            formData.value.avatar = await commSrv.getDefaultImg(formData.value?.realName || formData.value?.userName || '')
+          }
+        }
+
         if (formData.value?.id) {
           const userInfo = {
             ...formData.value,

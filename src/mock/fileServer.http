@@ -1,0 +1,18 @@
+###
+GET http://localhost:9090/nickName HTTP/1.1
+
+###
+GET http://localhost:9090/nickName?name=sample HTTP/1.1
+
+###
+GET http://localhost:9090/nickName?name=aa啊啊啊 HTTP/1.1
+
+###
+GET http://localhost:9090/nickName?name=神奇 HTTP/1.1
+
+###
+GET http://localhost:9090/nickName?name=神奇啊啊 HTTP/1.1
+
+###
+GET http://localhost:9090/nickName?name=神 HTTP/1.1
+

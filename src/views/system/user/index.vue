@@ -110,6 +110,7 @@ import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import EditModal from "./components/EditModal.vue";
 import EditResourceModal from "./components/EditResourceModal.vue";
 
+
 export default defineComponent({
   components: {
     SearchOutlined,
